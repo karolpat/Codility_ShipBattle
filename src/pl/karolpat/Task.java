@@ -10,7 +10,7 @@ import java.util.Set;
 public class Task {
 
 	public static String T = "2B 2D 3D 4D 4A 1B 1C";
-	public static String S = "1B 2C,2D 4D";
+	public static String S = "1B 2C,2D 4D, 1A 3A";
 	public static char[] alphabet = "abcdefghijklmnopqrstuvwxyz".toUpperCase().toCharArray();
 
 	public static void main(String[] args) {
@@ -21,34 +21,39 @@ public class Task {
 	}
 
 	/**
-	 * @param N  width/height of the board.
-	 * @param S String that contains coordinates on board where the ship is located.
-	 * @param T String that contains coordinates on board where hits are located.
+	 * @param N
+	 *            width/height of the board.
+	 * @param S
+	 *            String that contains coordinates on board where the ship is
+	 *            located.
+	 * @param T
+	 *            String that contains coordinates on board where hits are located.
 	 * @return String that represents result of shots on ships.
 	 */
 	public static String solution(int N, String S, String T) {
 
-		Map<Integer, Set<Integer>> mapOfShipsLocation = shipPosition(S);
-		Set<Integer> hitsList = hitPosition(T); //Set containing all hits coordinates
+		Map<Integer, Set<String>> mapOfShipsLocation = shipPosition(S);
+		Set<String> hitsList = hitPosition(T); // Set containing all hits coordinates
 
-		int sink = 0; //number of ships that went under
-		int hit = 0; //number of ships that were hit
+		int sink = 0; // number of ships that went under
+		int hit = 0; // number of ships that were hit
 
-		for (Map.Entry<Integer, Set<Integer>> entry : mapOfShipsLocation.entrySet()) {
+		for (Map.Entry<Integer, Set<String>> entry : mapOfShipsLocation.entrySet()) {
 
-			Set<Integer> shipCoordinates = entry.getValue(); //Set of consecutive ship's coordinates on board.
+			Set<String> shipCoordinates = entry.getValue(); // Set of consecutive ship's coordinates on board.
 
-			Set<Integer> onTarget = new HashSet<>(); //Set that will contain coordinates of hits that reached the target (ship).
+			Set<String> onTarget = new HashSet<>(); // Set that will contain coordinates of hits that reached the
+														// target (ship).
 
-			for (int i : shipCoordinates) {
+			for (String i : shipCoordinates) {
 
-				if (hitsList.contains(i)) {  //If coordinates is on hitsList and on shipCoorinated
-					onTarget.add(i);		//then this coordinate is added to onTarget list
+				if (hitsList.contains(i)) { // If coordinates is on hitsList and on shipCoorinated
+					onTarget.add(i); // then this coordinate is added to onTarget list
 				}
 			}
 			if (shipCoordinates.size() == onTarget.size()) {
 				sink++;
-			} else if (onTarget.size() < shipCoordinates.size()) {
+			} else if (onTarget.size() != 0 && onTarget.size() < shipCoordinates.size()) {
 				hit++;
 			}
 		}
@@ -56,24 +61,22 @@ public class Task {
 		return "Hit: " + hit + ", sink: " + sink;
 	}
 
-	public static int[][] createBoard(int N) {
+	public static String[][] createBoard(int N) {
 
 		char[] alphabet = "abcdefghijklmnopqrstuvwxyz".toUpperCase().toCharArray();
-		int[][] board = new int[N][N];
+		String[][] board = new String[N][N];
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
-				board[i][j] = (i + 1) * alphabet[j];
-				System.out.print(board[i][j] + " " + (i + 1) + "" + alphabet[j] + "   ////   ");
+				board[i][j] = (i + 1) + "" + alphabet[j];
 			}
-			System.out.println();
 		}
 		return board;
 	}
 
-	public static Map<Integer, Set<Integer>> shipPosition(String ship) {
+	public static Map<Integer, Set<String>> shipPosition(String ship) {
 
 		String[] shipCoordinates = getShipCorners(ship);
-		Map<Integer, Set<Integer>> map = new HashMap<>();
+		Map<Integer, Set<String>> map = new HashMap<>();
 		int count = 1;
 
 		List<Character> alphabetList = new ArrayList<>();
@@ -83,22 +86,26 @@ public class Task {
 
 		for (String s : shipCoordinates) {
 
-			Set<Integer> positions = new HashSet<>();
+			Set<String> positions = new HashSet<>();
 			String[] splitted = s.split("");
 
 			for (int i = 0; i < splitted.length; i = i + 2) {
-				positions.add(Integer.valueOf(splitted[i + 1].charAt(0)) * Integer.parseInt(splitted[i]));
+				positions.add(splitted[i + 1].charAt(0) + "" + splitted[i]);
 
 				if (i <= 1) {
 					if (splitted[i + 1].charAt(0) == splitted[i + 3].charAt(0)) {
-						positions.add((Integer.parseInt(splitted[i]) + 1) * Integer.valueOf(splitted[i + 1].charAt(0)));
+
+						positions.add((Integer.parseInt(splitted[i]) + 1) + "" + splitted[i + 1].charAt(0));
+						positions.add((Integer.parseInt(splitted[i]) + 2) + "" + splitted[i + 1].charAt(0));
 					} else if (splitted[i].charAt(0) == splitted[i + 2].charAt(0)) {
+						
 						int alphabetIndex = alphabetList.indexOf(splitted[i].charAt(0));
-						positions.add((Integer.parseInt(splitted[i + 1])
-								* Integer.valueOf(alphabetList.get(alphabetIndex + 1))));
+						positions.add(((splitted[i + 1]) + "" + alphabetList.get(alphabetIndex + 1)));
+						positions.add(((splitted[i + 1]) + "" + alphabetList.get(alphabetIndex + 2)));
 					} else if (splitted[i].charAt(0) == splitted[i + 2].charAt(0) - 1) {
-						positions.add((Integer.parseInt(splitted[i]) * Integer.valueOf(splitted[i + 3].charAt(0))));
-						positions.add((Integer.parseInt(splitted[i + 2]) * Integer.valueOf(splitted[i + 1].charAt(0))));
+						
+						positions.add((splitted[i]) +""+splitted[i + 3].charAt(0));
+						positions.add(((splitted[i + 2]) +""+(splitted[i + 1].charAt(0))));
 					}
 				}
 			}
@@ -106,17 +113,16 @@ public class Task {
 			map.put(count, positions);
 			count++;
 		}
-
 		return map;
 	}
 
-	public static Set<Integer> hitPosition(String hit) {
+	public static Set<String> hitPosition(String hit) {
 		hit = hit.replaceAll(" ", "");
 		String[] splitted = hit.split("");
-		Set<Integer> positions = new HashSet<>();
+		Set<String> positions = new HashSet<>();
 
 		for (int i = 0; i < splitted.length; i = i + 2) {
-			positions.add(Integer.parseInt(splitted[i]) * Integer.valueOf(splitted[i + 1].charAt(0)));
+			positions.add(splitted[i] + "" + splitted[i + 1].charAt(0));
 		}
 		return positions;
 	}
